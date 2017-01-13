@@ -2,9 +2,13 @@ defmodule EvilClock.Server do
   use GenServer
   require Logger
 
-  @speed 19200
-  @port "ttyUSB0"
-  @serial Nerves.UART
+  @speed            19200
+  @port             "ttyUSB0"
+  @serial           Nerves.UART
+  @def_clock_addr   "A0"
+  @def_scroll_freq  300
+
+  # Server
 
   def start_link do
     GenServer.start_link(__MODULE__, [@port, @speed], name: __MODULE__)
@@ -16,36 +20,41 @@ defmodule EvilClock.Server do
     {:ok, %{}}
   end
 
-  def write_alpha(alpha, points \\ [:none, :none, :none, :none, :none])
-  def write_alpha(alpha, points) when is_binary(alpha) and byte_size(alpha) <= 5 and length(points) == 5 do
-    contents = build_alpha_contents(alpha, points)
-    GenServer.cast(__MODULE__, {:write, contents})
-  end
-
-  def build_alpha_contents(alpha, points) do
-    padded_alpha = String.pad_trailing(alpha, 5)
-    pre = <<0xFF, "A0">> <> padded_alpha
-    for p <- points, into: pre do
-      case p do
-        p when p in [:lower, :l] -> "1"
-        p when p in [:upper, :u] -> "2"
-        p when p in [:both, :b] -> "3"
-        _ -> "_"
-      end
-    end
-  end
-
-  def handle_cast({:write, msg}, state) do
-    write(msg)
+  def handle_cast({:write, framing}, state) do
+    write_framing(framing)
     {:noreply, state}
   end
 
   def handle_info({_app, port, msg}, state) do
-    Logger.debug("Received from clock on #{port}: #{inspect msg}")
+    Logger.debug("Received data from clock on #{port}: #{inspect msg}")
     {:noreply, state}
   end
 
-  defp write(msg) do
-    @serial.write(Serial, msg)
+  # Client
+
+  def write_ascii(ascii, points \\ [:none, :none, :none, :none, :none], clock_addr \\ @def_clock_addr)
+  def write_ascii(ascii, points, clock_addr) when byte_size(ascii) <= 5 and length(points) == 5 do
+    framing = build_ascii_framing(ascii, points, clock_addr)
+    GenServer.cast(__MODULE__, {:write, framing})
+  end
+
+  def build_ascii_framing(ascii, points, clock_addr) do
+    padded_ascii = String.pad_trailing(ascii, 5)
+
+    for p <- points, into: <<0xFF, clock_addr::binary, padded_ascii::binary>>,
+      do: dp_string_from_atom(p)
+  end
+
+  def dp_string_from_atom(p) do
+    case p do
+      p when p in [:lower, :l] -> "1"
+      p when p in [:upper, :u] -> "2"
+      p when p in [:both, :b] ->  "3"
+      _ -> "_"
+    end
+  end
+
+  defp write_framing(framing) do
+    @serial.write(Serial, framing)
   end
 end
