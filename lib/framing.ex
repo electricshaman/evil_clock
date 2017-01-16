@@ -14,4 +14,12 @@ defmodule EvilClock.Framing do
       _ -> "_"
     end
   end
+
+  def build_time(timestamp) do
+    <<0xFF, "ST", timestamp::binary>>
+  end
+
+  def build_mode_time() do
+    <<0xFF, "MT", String.duplicate(" ", 10)::binary>>
+  end
 end

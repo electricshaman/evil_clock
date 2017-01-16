@@ -1,5 +1,6 @@
 defmodule EvilClock.Server do
   use GenServer
+  use Timex
 
   require Logger
 
@@ -9,7 +10,7 @@ defmodule EvilClock.Server do
   @default_opts clock: Config.get(:evil_clock, :primary_clock),
     scroll_rate: Config.get(:evil_clock, :scroll_rate),
     points: List.duplicate(:none, 5),
-    resume_time_delay: 500
+    resume_after: 1000
 
   # Server
 
@@ -24,7 +25,7 @@ defmodule EvilClock.Server do
     {:ok, {uart}}
   end
 
-  def handle_cast({:write_ascii, ascii, opts}, {uart} = state) when byte_size(ascii) > 5 do
+  def handle_cast({:display_ascii, ascii, opts}, {uart} = state) when byte_size(ascii) > 5 do
     # Push start of scrolling to the right side
     padded = String.duplicate(" ", 4) <> ascii
 
@@ -33,18 +34,32 @@ defmodule EvilClock.Server do
     |> Stream.each(fn(offset) -> write_slice(uart, offset, 5, padded, opts) end)
     |> Stream.run
 
+    schedule_mode_time(opts)
+
     {:noreply, state}
   end
 
-  def handle_cast({:write_ascii, ascii, opts}, {uart} = state) when byte_size(ascii) <= 5 do
+  def handle_cast({:display_ascii, ascii, opts}, {uart} = state) when byte_size(ascii) <= 5 do
     write_slice(uart, 0, 5, ascii, opts)
+    schedule_mode_time(opts)
+
     {:noreply, state}
   end
 
-  defp write_slice(uart, offset, length, text, opts) do
-    slice = String.slice(text, offset, length) |> String.upcase
-    framing = Framing.build_ascii(slice, opts[:points], opts[:clock])
+  def handle_cast({:set_time, timestamp, _opts}, {uart} = state) do
+    framing = Framing.build_time(timestamp)
     UART.write(uart, framing)
+    {:noreply, state}
+  end
+
+  def handle_cast({:mode_time, _opts}, {uart} = state) do
+    handle_mode_time(uart)
+    {:noreply, state}
+  end
+
+  def handle_info({:mode_time, _opts}, {uart} = state) do
+    handle_mode_time(uart)
+    {:noreply, state}
   end
 
   def handle_info({_app, port, {:error, reason}}, state) do
@@ -57,10 +72,46 @@ defmodule EvilClock.Server do
     {:noreply, state}
   end
 
+  defp write_slice(uart, offset, length, text, opts) do
+    slice = String.slice(text, offset, length) |> String.upcase
+    framing = Framing.build_ascii(slice, opts[:points], opts[:clock])
+    UART.write(uart, framing)
+  end
+
+  defp schedule_mode_time(opts) do
+    Process.send_after(self(), {:mode_time, opts}, opts[:resume_after])
+  end
+
+  defp handle_mode_time(uart) do
+    framing = Framing.build_mode_time()
+    UART.write(uart, framing)
+  end
+
   # Client API
 
-  def write_ascii(ascii, opts \\ []) do
+  def display_ascii(ascii, opts \\ []) do
+    # TODO: Separate options for different commands
     opts = Keyword.merge(@default_opts, opts)
-    GenServer.cast(__MODULE__, {:write_ascii, ascii, opts})
+    GenServer.cast(__MODULE__, {:display_ascii, ascii, opts})
+  end
+
+  def set_time(timestamp, opts \\ [])
+  def set_time(timestamp, opts) when is_binary(timestamp) do
+    opts = Keyword.merge(@default_opts, opts)
+    GenServer.cast(__MODULE__, {:set_time, timestamp, opts})
+  end
+  def set_time(timestamp, opts) when is_integer(timestamp) do
+    set_time(timestamp |> to_string, opts)
+  end
+
+  def set_time_local(opts) do
+    utc_offset = Timezone.local |> Timezone.total_offset
+    timestamp = Timex.local |> Timex.shift(seconds: utc_offset) |> Timex.to_unix
+    set_time(timestamp, opts)
+  end
+
+  def mode_time(opts \\ []) do
+    opts = Keyword.merge(@default_opts, opts)
+    GenServer.cast(__MODULE__, {:mode_time, opts})
   end
 end
