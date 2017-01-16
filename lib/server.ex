@@ -6,10 +6,10 @@ defmodule EvilClock.Server do
   alias Nerves.UART
   alias EvilClock.{Config, Framing}
 
-  @primary_clock  Config.get(:evil_clock, :primary_clock)
-  @scroll_freq    Config.get(:evil_clock, :scroll_frequency)
-
-  @def_dec_points [:none, :none, :none, :none, :none]
+  @default_opts clock: Config.get(:evil_clock, :primary_clock),
+    scroll_rate: Config.get(:evil_clock, :scroll_rate),
+    points: List.duplicate(:none, 5),
+    resume_time_delay: 500
 
   # Server
 
@@ -24,13 +24,31 @@ defmodule EvilClock.Server do
     {:ok, {uart}}
   end
 
-  def handle_cast({:write, framing}, {uart} = state) do
-    UART.write(uart, framing)
+  def handle_cast({:write_ascii, ascii, opts}, {uart} = state) when byte_size(ascii) > 5 do
+    # Push start of scrolling to the right side
+    padded = String.duplicate(" ", 4) <> ascii
+
+    Stream.interval(opts[:scroll_rate])
+    |> Stream.take_while(fn(offset) -> offset <= byte_size(padded) end)
+    |> Stream.each(fn(offset) -> write_slice(uart, offset, 5, padded, opts) end)
+    |> Stream.run
+
     {:noreply, state}
   end
 
+  def handle_cast({:write_ascii, ascii, opts}, {uart} = state) when byte_size(ascii) <= 5 do
+    write_slice(uart, 0, 5, ascii, opts)
+    {:noreply, state}
+  end
+
+  defp write_slice(uart, offset, length, text, opts) do
+    slice = String.slice(text, offset, length) |> String.upcase
+    framing = Framing.build_ascii(slice, opts[:points], opts[:clock])
+    UART.write(uart, framing)
+  end
+
   def handle_info({_app, port, {:error, reason}}, state) do
-    Logger.error("Received error from clock: #{inspect reason}")
+    Logger.error("Error involving clock on #{port}: #{inspect reason}")
     {:stop, reason, state}
   end
 
@@ -41,10 +59,8 @@ defmodule EvilClock.Server do
 
   # Client API
 
-  def write_ascii(ascii, points \\ @def_dec_points, clock \\ @primary_clock)
-  def write_ascii(ascii, points, clock) when byte_size(ascii) <= 5 and length(points) == 5 do
-    framing = Framing.build_ascii(ascii, points, clock)
-    GenServer.cast(__MODULE__, {:write, framing})
+  def write_ascii(ascii, opts \\ []) do
+    opts = Keyword.merge(@default_opts, opts)
+    GenServer.cast(__MODULE__, {:write_ascii, ascii, opts})
   end
-
 end
