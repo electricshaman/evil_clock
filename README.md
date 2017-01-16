@@ -1,6 +1,6 @@
-# EvilClock
+# Evil Clock
 
-**TODO: Add description**
+Elixir application for interfacing with [Alpha Clock Five](http://shop.evilmadscientist.com/productsmenu/tinykitlist/447) from Evil Mad Scientist Laboratories
 
 ## Installation
 
