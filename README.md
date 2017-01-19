@@ -59,3 +59,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
     end
     ```
 
+## Copyright and License
+Copyright (c) 2017 Jeff Smith
+
+Evil Clock source code is licensed under the [MIT License](https://github.com/electricshaman/evil_clock/blob/master/LICENSE).
