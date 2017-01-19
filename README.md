@@ -28,7 +28,7 @@ Currently supports the following commands from firmware versions 1.0 and 2.0:
 	config :evil_clock,
 	  port: "ttyUSB0",
 	  speed: 19200,
-          firmware_version: 2,
+	  firmware_version: 2,
 	  primary_clock: "A0",
 	  scroll_rate: 250
     ```
