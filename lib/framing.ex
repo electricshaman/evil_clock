@@ -2,7 +2,7 @@ defmodule EvilClock.Framing do
   @doc """
   Build a single serial message frame for the Ax (ASCII Display) command.
 
-  ## Examples
+    ## Examples
 
     iex> EvilClock.Framing.build_ascii_frame("HELLO", List.duplicate(:none, 5), "A0", 1)
     <<255, 65, 48, 72, 69, 76, 76, 79, 95, 95, 95, 95, 95>>
@@ -31,7 +31,7 @@ defmodule EvilClock.Framing do
   end
 
   @doc """
-  Translate an atom representing a decimal point segment into its corresponding protocol value for firmware v2.0.
+  Translate an atom representing a decimal point segment into its corresponding protocol value for firmware v1.0.
   """
   def dec_point_from_atom(p, 1) do
     case p do
@@ -45,7 +45,7 @@ defmodule EvilClock.Framing do
   @doc """
   Translates an atom representing a decimal point segment into its corresponding protocol value for firmware v2.0.
 
-  ## Examples
+    ## Examples
 
     ### Firmware 1.0
 
@@ -67,7 +67,7 @@ defmodule EvilClock.Framing do
     iex> EvilClock.Framing.dec_point_from_atom(:other, 1)
     "_"
 
-		### Firmware >= 2.0
+    ### Firmware >= 2.0
 
     iex> EvilClock.Framing.dec_point_from_atom(:lower, 2)
     "1"
@@ -97,10 +97,10 @@ defmodule EvilClock.Framing do
     end
   end
 
-	@doc """
+  @doc """
   Build a single serial message frame for the ST (Set Time) command.
 
-	## Examples
+    ## Examples
 
     iex> EvilClock.Framing.build_set_time_frame("1484811870", 1)
     <<255, 83, 84, 49, 52, 56, 52, 56, 49, 49, 56, 55, 48>>
@@ -108,15 +108,15 @@ defmodule EvilClock.Framing do
     iex> EvilClock.Framing.build_set_time_frame("1484811870", 2)
     <<255, 83, 84, 49, 52, 56, 52, 56, 49, 49, 56, 55, 48>>
 
-	"""
+  """
   def build_set_time_frame(timestamp, _fw_ver) do
     <<0xFF, "ST", timestamp::binary>>
   end
 
-	@doc """
-	Build a single serial message frame for the MT (Mode Time) command.
+  @doc """
+  Build a single serial message frame for the MT (Mode Time) command.
 
-	## Examples
+    ## Examples
 
     iex> EvilClock.Framing.build_mode_time_frame(1)
     <<255, 77, 84, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32>>
@@ -124,7 +124,7 @@ defmodule EvilClock.Framing do
     iex> EvilClock.Framing.build_mode_time_frame(2)
     <<255, 77, 84, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32>>
 
-	"""
+  """
   def build_mode_time_frame(_fw_ver) do
     <<0xFF, "MT", String.duplicate(" ", 10)::binary>>
   end
