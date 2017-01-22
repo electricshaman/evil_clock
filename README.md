@@ -11,6 +11,8 @@ Currently supports the following commands from firmware versions 1.0 and 2.0:
  - `ST`: Set Time
  - `A0/Ax`: ASCII Display
  - `MT`: Mode Time
+ 
+For more details on these commands, check out the serial protocol docs on the Evil Mad Scientist wiki: [Firmware 1.0](http://wiki.evilmadscientist.com/Alpha_Clock_Serial) or [Firmware 2.0](http://wiki.evilmadscientist.com/Alpha_Clock_Serial_v2).
 
 ## Usage
 
