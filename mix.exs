@@ -17,6 +17,7 @@ defmodule EvilClock.Mixfile do
 
   defp deps do
     [{:timex, "~> 3.0"},
-     {:nerves_uart, "~> 0.1.1"}]
+     {:nerves_uart, "~> 0.1.1"},
+     {:credo, "~> 0.5", only: [:dev, :test]}]
   end
 end
