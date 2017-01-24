@@ -1,7 +1,7 @@
 defmodule EvilClock do
   use Application
 
-  alias EvilClock.Config
+  alias EvilClock.{Config, Server}
 
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
@@ -17,4 +17,10 @@ defmodule EvilClock do
     opts = [strategy: :rest_for_one, name: EvilClock.Supervisor]
     Supervisor.start_link(children, opts)
   end
+
+  defdelegate display_ascii(ascii, opts), to: Server
+  defdelegate set_time(timestamp, opts), to: Server
+  defdelegate set_time_local(opts), to: Server
+  defdelegate mode_time(opts), to: Server
+
 end

@@ -35,7 +35,7 @@ For more details on these commands, check out the serial protocol docs on the Ev
 	  scroll_rate: 250
     ```
 
-  3. Start your application, and call the clock using functions on `EvilClock.Server`:
+  3. Start your application, and call the clock using functions on `EvilClock`:
 	  - `display_ascii`
 	  - `set_time`
 	  - `set_local_time`
