@@ -18,9 +18,9 @@ defmodule EvilClock do
     Supervisor.start_link(children, opts)
   end
 
-  defdelegate display_ascii(ascii, opts), to: Server
-  defdelegate set_time(timestamp, opts), to: Server
-  defdelegate set_time_local(opts), to: Server
-  defdelegate mode_time(opts), to: Server
+  defdelegate display_ascii(ascii, opts \\ []), to: Server
+  defdelegate set_time(timestamp, opts \\ []), to: Server
+  defdelegate set_time_local(opts \\ []), to: Server
+  defdelegate mode_time(opts \\ []), to: Server
 
 end
