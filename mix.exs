@@ -7,7 +7,9 @@ defmodule EvilClock.Mixfile do
      elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps()]
+     deps: deps(),
+     description: description(),
+     package: package()]
   end
 
   def application do
@@ -18,6 +20,20 @@ defmodule EvilClock.Mixfile do
   defp deps do
     [{:timex, "~> 3.0"},
      {:nerves_uart, "~> 0.1.1"},
-     {:credo, "~> 0.5", only: [:dev, :test]}]
+     {:credo, "~> 0.5", only: [:dev, :test]},
+     {:ex_doc, ">= 0.0.0", only: :dev}]
+  end
+
+  defp description do
+    """
+    Elixir application for interfacing with Alpha Clock Five from Evil Mad Scientist Laboratories
+    """
+  end
+
+  defp package do
+    [name: :evil_clock,
+     maintainers: ["Jeff Smith"],
+     licenses: ["MIT"],
+     links: %{"GitHub" => "https://github.com/electricshaman/evil_clock"}]
   end
 end
