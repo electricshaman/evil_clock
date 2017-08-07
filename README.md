@@ -18,22 +18,22 @@ For more details on these commands, check out the serial protocol docs on the Ev
 
   1. Ensure `evil_clock` is started before your application:
 
-    ```elixir
-    def application do
-      [applications: [:evil_clock]]
-    end
-    ```
+        ```elixir
+        def application do
+          [applications: [:evil_clock]]
+        end
+        ```
 
   2. Configure settings in `config/config.exs`:
 
-    ```elixir
-	config :evil_clock,
-	  port: "ttyUSB0",
-	  speed: 19200,
-	  firmware_version: 2,
-	  primary_clock: "A0",
-	  scroll_rate: 250
-    ```
+        ```elixir
+        config :evil_clock,
+          port: "ttyUSB0",
+          speed: 19200,
+          firmware_version: 2,
+          primary_clock: "A0",
+          scroll_rate: 250
+        ```
 
   3. Start your application, and call the clock using functions on `EvilClock`:
 	  - `display_ascii`
@@ -43,23 +43,21 @@ For more details on these commands, check out the serial protocol docs on the Ev
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
-
   1. Add `evil_clock` to your list of dependencies in `mix.exs`:
 
-    ```elixir
-    def deps do
-      [{:evil_clock, "~> 0.1.0"}]
-    end
-    ```
+        ```elixir
+        def deps do
+          [{:evil_clock, "~> 0.1.0"}]
+        end
+        ```
 
   2. Ensure `evil_clock` is started before your application:
 
-    ```elixir
-    def application do
-      [applications: [:evil_clock]]
-    end
-    ```
+        ```elixir
+        def application do
+          [applications: [:evil_clock]]
+        end
+        ```
 
 ## Copyright and License
 Copyright (c) 2017 Jeff Smith
