@@ -93,13 +93,13 @@ defmodule EvilClock.Server do
 
   def display_ascii(ascii, opts \\ []) do
     # TODO: Separate options for different commands
-    opts = Keyword.merge(@default_opts, opts)
+    opts = Keyword.merge(opts, @default_opts)
     GenServer.cast(__MODULE__, {:display_ascii, ascii, opts})
   end
 
   def set_time(timestamp, opts \\ [])
   def set_time(timestamp, opts) when is_binary(timestamp) do
-    opts = Keyword.merge(@default_opts, opts)
+    opts = Keyword.merge(opts, @default_opts)
     GenServer.cast(__MODULE__, {:set_time, timestamp, opts})
   end
   def set_time(timestamp, opts) when is_integer(timestamp) do
@@ -113,7 +113,7 @@ defmodule EvilClock.Server do
   end
 
   def mode_time(opts \\ []) do
-    opts = Keyword.merge(@default_opts, opts)
+    opts = Keyword.merge(opts, @default_opts)
     GenServer.cast(__MODULE__, {:mode_time, opts})
   end
 end
